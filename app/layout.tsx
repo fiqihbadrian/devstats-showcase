@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GitHub Profile Showcase - Visualize Your GitHub Stats",
-  description: "Showcase your GitHub profile with beautiful stats and visualizations. Built by Fiqih Badrian.",
+  title: "DevStats Showcase - Visualize Your Developer Stats",
+  description: "Showcase your developer profile with beautiful stats and visualizations. Built by Fiqih Badrian.",
 };
 
 export default function RootLayout({

@@ -1,6 +1,6 @@
-# GitHub Profile Showcase
+# DevStats Showcase
 
-Visualize your GitHub stats and share your developer profile with beautiful, interactive cards.
+Visualize your developer stats and share your profile with beautiful, interactive cards.
 
 ## Features
 
