@@ -1,65 +1,222 @@
-import Image from "next/image";
+'use client';
+
+import { signIn, signOut, useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+  const { data: session, status } = useSession();
+  const [githubData, setGithubData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (session?.accessToken) {
+      fetchGithubData();
+    }
+  }, [session]);
+
+  const fetchGithubData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/github/stats', {
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
+      const data = await response.json();
+      setGithubData(data);
+    } catch (error) {
+      console.error('Error fetching GitHub data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        <div className="text-center px-4">
+          <div className="mb-8">
+            <svg className="w-20 h-20 mx-auto mb-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+            </svg>
+            <h1 className="text-5xl font-bold text-white mb-4">
+              GitHub Profile Showcase
+            </h1>
+            <p className="text-xl text-gray-400 mb-8">
+              Visualize your GitHub stats and share your developer profile
+            </p>
+          </div>
+          
+          <button
+            onClick={() => signIn('github')}
+            className="inline-flex items-center gap-3 bg-white hover:bg-gray-100 text-gray-900 font-semibold px-8 py-4 rounded-xl transition-all transform hover:scale-105"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+            </svg>
+            Sign in with GitHub
+          </button>
+
+          <p className="mt-6 text-sm text-gray-500">
+            We only request read access to your public repositories
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">GitHub Profile Showcase</h1>
+          <button
+            onClick={() => signOut()}
+            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Sign out
+          </button>
         </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="w-16 h-16 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your GitHub data...</p>
+          </div>
+        ) : githubData ? (
+          <div className="space-y-8">
+            {/* Profile Card */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-8">
+              <div className="flex items-start gap-6">
+                <img
+                  src={githubData.user.avatar_url}
+                  alt={githubData.user.name}
+                  className="w-24 h-24 rounded-full border-4 border-gray-100"
+                />
+                <div className="flex-1">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    {githubData.user.name || githubData.user.login}
+                  </h2>
+                  <p className="text-gray-600 mb-4">@{githubData.user.login}</p>
+                  {githubData.user.bio && (
+                    <p className="text-gray-700 mb-4">{githubData.user.bio}</p>
+                  )}
+                  <div className="flex gap-6 text-sm">
+                    <div>
+                      <span className="font-semibold text-gray-900">{githubData.user.followers}</span>
+                      <span className="text-gray-600"> followers</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-900">{githubData.user.following}</span>
+                      <span className="text-gray-600"> following</span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-900">{githubData.user.public_repos}</span>
+                      <span className="text-gray-600"> repositories</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                <div className="text-sm font-medium text-gray-600 mb-2">Total Stars</div>
+                <div className="text-4xl font-bold text-gray-900">{githubData.stats.totalStars}</div>
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                <div className="text-sm font-medium text-gray-600 mb-2">Total Forks</div>
+                <div className="text-4xl font-bold text-gray-900">{githubData.stats.totalForks}</div>
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                <div className="text-sm font-medium text-gray-600 mb-2">Repositories</div>
+                <div className="text-4xl font-bold text-gray-900">{githubData.stats.totalRepos}</div>
+              </div>
+            </div>
+
+            {/* Top Languages */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Top Languages</h3>
+              <div className="flex flex-wrap gap-2">
+                {githubData.stats.topLanguages.map((lang: string) => (
+                  <span
+                    key={lang}
+                    className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg font-medium"
+                  >
+                    {lang}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Top Repositories */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Top Repositories</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {githubData.repos.map((repo: any) => (
+                  <a
+                    key={repo.name}
+                    href={repo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-4 border border-gray-200 rounded-xl hover:border-gray-900 transition-colors"
+                  >
+                    <h4 className="font-semibold text-gray-900 mb-2">{repo.name}</h4>
+                    {repo.description && (
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{repo.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      {repo.language && (
+                        <span className="flex items-center gap-1">
+                          <span className="w-3 h-3 rounded-full bg-gray-400"></span>
+                          {repo.language}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        {repo.stars}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        {repo.forks}
+                      </span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-white mt-20">
+        <div className="max-w-7xl mx-auto px-4 py-8 text-center">
+          <p className="text-sm text-gray-600">
+            Dibuat oleh <span className="font-semibold text-gray-900">Fiqih Badrian</span> © 2026
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
