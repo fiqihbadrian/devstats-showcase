@@ -1,9 +1,9 @@
 import NextAuth from "next-auth"
-import GithubProvider from "next-auth/providers/github"
+import GitHub from "next-auth/providers/github"
 
-const handler = NextAuth({
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
-    GithubProvider({
+    GitHub({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       authorization: {
@@ -30,4 +30,4 @@ const handler = NextAuth({
   },
 })
 
-export { handler as GET, handler as POST }
+export const { GET, POST } = handlers
